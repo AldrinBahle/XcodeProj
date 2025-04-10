@@ -5,11 +5,24 @@ import PathKit
 
 // MARK: - Path extras.
 
-func systemGlob(_ pattern: UnsafePointer<CChar>!, _ flags: Int32, _ errfunc: (@convention(c) (UnsafePointer<CChar>?, Int32) -> Int32)!, _ vector_ptr: UnsafeMutablePointer<glob_t>!) -> Int32 {
-    #if os(macOS)
-        return Darwin.glob(pattern, flags, errfunc, vector_ptr)
+#if os(macOS) || os(iOS)
+import Darwin
+#elseif os(Linux)
+import Glibc
+#endif
+
+func systemGlob(
+    _ pattern: UnsafePointer<CChar>?,
+    _ flags: Int32,
+    _ errfunc: (@convention(c) (UnsafePointer<CChar>?, Int32) -> Int32)?,
+    _ vector_ptr: UnsafeMutablePointer<glob_t>!
+) -> Int32 {
+    #if os(macOS) || os(iOS)
+    return Darwin.glob(pattern, flags, errfunc, vector_ptr)
+    #elseif os(Linux)
+    return Glibc.glob(pattern, flags, errfunc, vector_ptr)
     #else
-        return Glibc.glob(pattern, flags, errfunc, vector_ptr)
+    fatalError("Unsupported platform")
     #endif
 }
 

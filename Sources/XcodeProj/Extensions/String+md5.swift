@@ -21,25 +21,22 @@
  */
 
 import Foundation
-#if canImport(CryptoKit)
-    import CryptoKit
-#endif
+import CryptoKit
 
 extension String {
     var md5: String {
         guard let data = data(using: .utf8, allowLossyConversion: true) else {
             return self
         }
-        #if canImport(CryptoKit)
-            if #available(OSX 10.15, *) {
-                return Insecure.MD5.hash(data: data)
-                    .withUnsafeBytes { Array($0) }.hexString
-            } else {
-                return data.slowMD5
-            }
-        #else
-            return data.slowMD5
-        #endif
+
+        let digest = Insecure.MD5.hash(data: data)
+        return digest.withUnsafeBytes { Array($0) }.hexString
+    }
+}
+
+extension Array where Element == UInt8 {
+    var hexString: String {
+        map { String(format: "%02x", $0) }.joined()
     }
 }
 
